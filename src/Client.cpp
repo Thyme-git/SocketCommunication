@@ -7,28 +7,15 @@
 
 Client :: Client(
     ConnectionType type
-// ,   unsigned short int port
-// ,   in_addr_t IPv4_addr
 ){
     // 创建socket
-    int socket_type = (type == UDP) ? SOCK_DGRAM : SOCK_STREAM;
-    this->socket_file_descriptor = socket(AF_INET, socket_type, 0);
+    this->socket_type = (type == UDP) ? SOCK_DGRAM : SOCK_STREAM;
+    this->socket_file_descriptor = socket(AF_INET, this->socket_type, 0);
     if (this->socket_file_descriptor == -1)
     {
         std :: cerr << "can't create socket!" << std :: endl;
         exit(-1);
     }
-
-    // // 将socket 与ip地址以及端口绑定
-    // this->ip_address.sin_addr.s_addr = IPv4_addr;
-    // this->ip_address.sin_family = AF_INET;
-    // this->ip_address.sin_port = port;
-    // memset(this->ip_address.sin_zero, 0, sizeof(this->ip_address.sin_zero));
-    // if (bind(this->socket_file_descriptor, (const sockaddr*) &(this->ip_address), sizeof(sockaddr)) == -1)
-    // {
-    //     std :: cerr << "bind error!" << std :: endl;
-    //     exit(-1);
-    // }
 
     this->connectionType = type;
 }
@@ -40,7 +27,8 @@ bool Client :: client_connect(
     bool connected = false;
     while (try_time--)
     {
-        if (connect(this->socket_file_descriptor, (struct sockaddr *) &(server_address), sizeof(sockaddr)) != -1)
+        int check = connect(this->socket_file_descriptor, (struct sockaddr *) &(server_address), sizeof(sockaddr));
+        if (check != -1)
         {
             connected = true;
             break;
@@ -77,6 +65,7 @@ bool Client :: client_receive()
         std :: cerr << "send error!" << std :: endl;
         return false;
     }
+    this->buffer[recieved_byte] = '\0';
     return true;
 }
 
@@ -102,10 +91,23 @@ int main()
     server_address.sin_port = htons(SERVERPOT);
     // memset(server_address.sin_zero, 0, sizeof(server_address.sin_zero));
 
-    client.client_connect(server_address);
-    char* msg = "hello";
+    if (!client.client_connect(server_address))
+    {
+        exit(-1);
+    }
+    std :: cout << "connected!" << std :: endl;
+    
+    
+    char* msg = "hello server!";
     client.client_send(msg);
+    
+    
+    client.client_receive();
+    std :: cout << "server sent : " << client.get_buffer() << std :: endl;
+
+    
     client.client_close();
+
     return 0;
 }
 

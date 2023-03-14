@@ -8,9 +8,9 @@
 class Client
 {
     int socket_file_descriptor;
-    // sockaddr_in ip_address;        // ipv4 with port
     ConnectionType connectionType; // UDP or TCP
     sockaddr_in server_address;
+    int socket_type;
     
     char buffer[BUFFER_SIZE];
     int buffer_size = BUFFER_SIZE;
@@ -18,8 +18,6 @@ class Client
 public:
     Client(
         ConnectionType type
-    // ,   unsigned short int port
-    // ,   in_addr_t IPv4_addr = LOCALHOST
     );
 
     bool client_connect(

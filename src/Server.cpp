@@ -73,13 +73,13 @@ bool Server :: server_accept(
         return false;
     }
 
-    return false;
+    return true;
 }
 
 bool Server :: server_send(
     char* msg
 ){
-    int sent_byte = send(this->socket_file_descriptor, msg, strlen(msg), 0);
+    int sent_byte = send(this->client_sockfd, msg, strlen(msg), 0);
     if (sent_byte == -1){
         std :: cerr << "send error!" << std :: endl;
         return false;
@@ -96,6 +96,7 @@ bool Server :: server_receive()
         std :: cerr << "receive error!" << std :: endl;
         return false;
     }
+    this->buffer[recieved_byte] = '\0';
     return true;
 }
 
@@ -115,11 +116,21 @@ int main()
 {
     Server server(TCP, htons(SERVERPOT));
     server.server_listen();
-    server.server_accept();
+    if (!server.server_accept())
+    {
+        exit(-1);
+    }
     std :: cout << "connected!" << std :: endl;
+    
+    
     server.server_receive();
-    char* buf = server.get_buffer();
-    std :: cout << buf << std :: endl;
+    std :: cout << "client sent : " << server.get_buffer() << std :: endl;
+    
+    
+    char* msg = "hi client!";
+    server.server_send(msg);
+
+    
     server.server_close();
     return 0;
 }
